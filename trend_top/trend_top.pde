@@ -1,3 +1,9 @@
+/*
+twitterトレンドランキングを視覚化
+ランキングが高ければ中心に、低ければ外側に位置
+*/
+
+
 import processing.opengl.*; 
 import twitter4j.conf.*;
 import twitter4j.api.*;
@@ -13,12 +19,13 @@ ConfigurationBuilder cb;
 Query query;
 Twitter twitter;
 Trends trends;
-Trends temp;
 List<Trend> ttList;
 long t;
-ArrayList<String> trendList;
 Timer time;
+int interval = 60000*10;
+ArrayList<String> trendList;
 int trendId =   23424856; //Japan whoid (http://woeid.rosselliot.co.nz/lookup/japan)
+
 
 
 void setup() {  
@@ -26,7 +33,6 @@ void setup() {
   frameRate(20);   
   // font  
   font = createFont("Meiryo", 28, true);
-  
   ttList = new ArrayList<Trend>();
   
   
@@ -40,12 +46,14 @@ void setup() {
   //create twitter object
   twitter = new TwitterFactory(cb.build()).getInstance();
   trendList = queryTwitter();
+  
+  //update time
+  time = new Timer(interval);
+  time.start();  //start timer
 
     
 }  
   
-  
-
 
 void draw() {
   background(50);
@@ -71,6 +79,12 @@ void draw() {
       line(0, -500, 0, 0, 500, 0);
   popStyle();
   
+  
+  if(time.isDone()) {
+          trendList = queryTwitter();
+          time.reset();
+      }
+  
   t++;
  
 }
@@ -85,7 +99,7 @@ ArrayList<String> queryTwitter() {
       trends = twitter.getPlaceTrends(trendId);
       for (int i = 0; i < trends.getTrends().length; i++) {
           println(trends.getTrends()[i].getName());
-          //twitt.add(trends.getTrends()[i].getName());      //test
+          twitt.add(trends.getTrends()[i].getName());      //test
           ttList.add(new Trend(trends, i));
       }
     
