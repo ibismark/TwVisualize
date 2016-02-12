@@ -1,78 +1,95 @@
-import processing.opengl.*;  
+import processing.opengl.*; 
+import twitter4j.conf.*;
+import twitter4j.api.*;
+import twitter4j.*;
+import java.util.List;
+import java.util.Iterator;
+import java.util.*;
   
 PFont font;  
-long  time;
 
-float degree;
-int r;            // radius
-float centerx;    // center point (x, y, z)
-float centery;
-float centerz;
 
-float rad;        // sita 
+ConfigurationBuilder cb;
+Query query;
+Twitter twitter;
+Trends trends;
+Trends temp;
+List<Trend> ttList;
+long t;  //ランダム用
+ArrayList<String> trendList;
+Timer time;
+int trendId =   23424856; //Japan whoid (http://woeid.rosselliot.co.nz/lookup/japan)
 
-float x;
-float y;
-float z;
 
-PVector pos;
-float offsetx;
-float offsety;
-
-  
 void setup() {  
   size(displayWidth, displayHeight, OPENGL);
   frameRate(20);
     
   // font  
-  font = createFont("Meiryo", 48);
+  font = createFont("Meiryo", 28, true);
+  textFont(font, 28);
+  
+  ttList = new ArrayList<Trend>();
+  
+  
+  //APIキー
+  cb = new ConfigurationBuilder();
+  cb.setOAuthConsumerKey("xN0UOvUWefgAQJigDTNHu8VuE");
+  cb.setOAuthConsumerSecret("23mAbFQiDgMbTqeZQN5BZhqnYkVosyplq6PytwmzxGJutmTdgy");
+  cb.setOAuthAccessToken("1035544124-J9T5YBNeFmYMNELO5RHvJ8nbn6MvHbLEZwJAcup");
+  cb.setOAuthAccessTokenSecret("ITHQ0kaYxsLyQ7wKQN30VeHxT0Dg97AqLQxzmWuSOIVFW");
 
-  degree = 0.0;
-  r = 600;
-  //centerx = displayWidth/2.0;
-  //centery = displayHeight/2.0;
-  //centerx = 0.0;
-  //centery = 0.0; 
+  //create twitter object
+  twitter = new TwitterFactory(cb.build()).getInstance();
+  trendList = queryTwitter();
+  
+  hint(ENABLE_DEPTH_SORT);
+
     
 }  
   
 void draw() {
   background(50);
-  camera(0, -300, mouseX, 0, 0, 0, 0, 1, 0);
+  camera(0, -mouseY, mouseX, 0, 0, 0, 0, 1, 0);
   
+  for(int i = 0; i < ttList.size(); ++i) {  
+          ttList.get(i).update();  
+  }
+  
+  //drawing ground
   pushStyle();
-  
-      rad = PI/180.0*degree;
-      offsetx = random(-2, 2);
-      offsety = random(-2, 2);
-      //rad = random(0, 2.0*PI);
-      x = centerx + r*cos(rad);
-      y = centery;
-      z = centerz + r*sin(rad);
-      pos = new PVector(x, y, z);
-      
-      pushMatrix();
-          //pos.set(x+offsetx, 0, z+offsety);
-          translate(pos.x, pos.y, pos.z);
-          text("test", 0, 0);
-      popMatrix();
-   
-      
       stroke(0, 255, 0);
-      for(int x = -1000; x <= 1000; x += 100)
+      for(int x = -1000; x <= 1000; x += 100){
           line(x, 0, -1000, x, 0, 1000);
-      for(int z = -1000; z <= 1000; z += 100)
+      }
+      for(int z = -1000; z <= 1000; z += 100){
           line(-1000, 0, z, 1000, 0, z);
-          
-          
+      }
+  
       stroke(255, 0, 0);
       line(0, -500, 0, 0, 500, 0);
-      
   popStyle();
+ 
   
-  
-  degree+= 1;
-  
-  
-  
+}
+
+
+ArrayList<String> queryTwitter() {
+  ArrayList<String> twitt = new ArrayList<String>();
+  try{
+    
+      trends = twitter.getPlaceTrends(trendId);
+      for (int i = 0; i < trends.getTrends().length; i++) {
+      //for (int i = 0; i < 5; i++) {
+        println(trends.getTrends()[i].getName());
+        twitt.add(trends.getTrends()[i].getName());
+        //クラス作成&オブジェクト格納
+        ttList.add(new Trend(trends, i));
+      }
+    
+  }catch (TwitterException te) {
+      println("Couldn't connect: " + te);
+  }
+
+  return twitt;
 }
