@@ -15,7 +15,7 @@ Twitter twitter;
 Trends trends;
 Trends temp;
 List<Trend> ttList;
-long t;  //ランダム用
+long t;
 ArrayList<String> trendList;
 Timer time;
 int trendId =   23424856; //Japan whoid (http://woeid.rosselliot.co.nz/lookup/japan)
@@ -23,11 +23,9 @@ int trendId =   23424856; //Japan whoid (http://woeid.rosselliot.co.nz/lookup/ja
 
 void setup() {  
   size(displayWidth, displayHeight, OPENGL);
-  frameRate(20);
-    
+  frameRate(20);   
   // font  
   font = createFont("Meiryo", 28, true);
-  textFont(font, 28);
   
   ttList = new ArrayList<Trend>();
   
@@ -42,15 +40,18 @@ void setup() {
   //create twitter object
   twitter = new TwitterFactory(cb.build()).getInstance();
   trendList = queryTwitter();
-  
-  hint(ENABLE_DEPTH_SORT);
 
     
 }  
   
+  
+
+
 void draw() {
   background(50);
+  float angle = 0.05f * radians(t);
   camera(0, -mouseY, mouseX, 0, 0, 0, 0, 1, 0);
+  rotateY(angle);
   
   for(int i = 0; i < ttList.size(); ++i) {  
           ttList.get(i).update();  
@@ -69,22 +70,23 @@ void draw() {
       stroke(255, 0, 0);
       line(0, -500, 0, 0, 500, 0);
   popStyle();
- 
   
+  t++;
+ 
 }
 
 
+
+//access twitter server
 ArrayList<String> queryTwitter() {
   ArrayList<String> twitt = new ArrayList<String>();
   try{
     
       trends = twitter.getPlaceTrends(trendId);
       for (int i = 0; i < trends.getTrends().length; i++) {
-      //for (int i = 0; i < 5; i++) {
-        println(trends.getTrends()[i].getName());
-        twitt.add(trends.getTrends()[i].getName());
-        //クラス作成&オブジェクト格納
-        ttList.add(new Trend(trends, i));
+          println(trends.getTrends()[i].getName());
+          //twitt.add(trends.getTrends()[i].getName());      //test
+          ttList.add(new Trend(trends, i));
       }
     
   }catch (TwitterException te) {
